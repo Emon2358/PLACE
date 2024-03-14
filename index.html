@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PLACE site</title>
+    <style>
+      body,
+      html {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+      }
+      .grid-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(1mm, 1fr));
+        grid-auto-rows: 1mm;
+        gap: 1px;
+        height: 250%;
+      }
+      .grid-item {
+        width: 1mm;
+        height: 1mm;
+        background-color: white;
+        border: 1px solid black;
+      }
+      .color-picker {
+        position: fixed;
+        top: 10px;
+        right: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <label for="grid-size">マス目の量:</label>
+    <input type="number" id="grid-size" value="100" />
+    <button onclick="generateGrid()">生成</button>
+    <input type="color" id="color-picker" class="color-picker" />
+    <div class="grid-container" tabindex="0">
+      <!-- 升目を動的に生成する -->
+    </div>
+    <script>
+      let currentCell;
+      let currentColor = "black";
+
+      function generateGrid() {
+        const gridSizeInput = document.getElementById("grid-size");
+        const gridSize = parseInt(gridSizeInput.value);
+        const gridContainer = document.querySelector(".grid-container");
+        gridContainer.innerHTML = "";
+
+        // 升目を動的に生成する
+        for (let i = 0; i < gridSize * gridSize; i++) {
+          const gridItem = document.createElement("div");
+          gridItem.classList.add("grid-item");
+          gridItem.addEventListener("mousedown", function (event) {
+            if (event.button === 2) {
+              toggleColor(this);
+            } else if (event.button === 0) {
+              toggleColorByLeftClick(this);
+            }
+          });
+          gridContainer.appendChild(gridItem);
+        }
+        gridContainer.style.gridTemplateColumns = `repeat(auto-fill, minmax(1mm, ${
+          100 / gridSize
+        }fr))`;
+        gridContainer.style.gridAutoRows = `1mm`;
+
+        // マウスクリックで色を変更するためのイベントを追加
+        gridContainer.addEventListener("contextmenu", function (event) {
+          event.preventDefault();
+        });
+      }
+
+      // 色のトグル機能
+      function toggleColor(element) {
+        element.style.backgroundColor = currentColor;
+      }
+
+      // 左クリックで色を変更するための関数
+      function toggleColorByLeftClick(element) {
+        element.style.backgroundColor = currentColor;
+      }
+
+      // カラーピッカーの色を変更するための関数
+      document
+        .getElementById("color-picker")
+        .addEventListener("change", function (event) {
+          currentColor = event.target.value;
+        });
+
+      // キーボードの十字キーでマス目を移動するためのイベントを追加
+      document.addEventListener("keydown", function (event) {
+        if (currentCell) {
+          const gridItems = document.querySelectorAll(".grid-item");
+          let index = Array.from(gridItems).indexOf(currentCell);
+
+          switch (event.key) {
+            case "ArrowUp":
+              index -= Math.sqrt(gridItems.length);
+              break;
+            case "ArrowDown":
+              index += Math.sqrt(gridItems.length);
+              break;
+            case "ArrowLeft":
+              index--;
+              break;
+            case "ArrowRight":
+              index++;
+              break;
+          }
+
+          if (index >= 0 && index < gridItems.length) {
+            currentCell = gridItems[index];
+            currentCell.focus();
+          }
+        }
+      });
+
+      // ページ読み込み時に初期のマス目を生成
+      window.addEventListener("DOMContentLoaded", function () {
+        generateGrid();
+        const gridContainer = document.querySelector(".grid-container");
+        const gridItems = document.querySelectorAll(".grid-item");
+        currentCell = gridItems[0];
+        currentCell.focus();
+      });
+    </script>
+  </body>
+</html>
